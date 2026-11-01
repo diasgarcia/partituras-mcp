@@ -42,6 +42,8 @@ npm --prefix parititura-mcp run check
 npm --prefix parititura-mcp test
 ```
 
+Os testes do MCP estão em `parititura-mcp/testes/unitarios`, escritos em TypeScript com Vitest e separados em **Arrange, Act e Assert (AAA)**. Usam mocks e não precisam iniciar API, MCP ou banco. Para executá-los a cada alteração, use `npm --prefix parititura-mcp run test:watch`.
+
 As variáveis opcionais `PARTITURAS_API_URL` e `PORT` alteram o endereço da API e a porta do MCP. Os padrões são `http://localhost:8080` e `8000`.
 
 A versão Python está em `partituras-mcp-old`. Sua feature e instalação ficaram comentadas em `.devcontainer/devcontainer.json` e `.devcontainer/preparar-ambiente.sh`. Para utilizá-la, habilite essas linhas, reconstrua o container e execute `python partituras-mcp-old/partituras_mcp.py` no segundo terminal.
