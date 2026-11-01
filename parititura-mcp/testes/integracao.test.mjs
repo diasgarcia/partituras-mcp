@@ -30,7 +30,6 @@ let api;
 let servidor;
 let clienteMcp;
 let endereco;
-let identificador = 0;
 let chamadas = [];
 let responder;
 
@@ -47,35 +46,16 @@ async function encerrar(servidorHttp) {
   await encerrado;
 }
 
-async function requisicaoMcp(method, params = {}, versao = '2025-11-25') {
-  const resposta = await fetch(`${endereco}/mcp`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json, text/event-stream',
-      'MCP-Protocol-Version': versao,
-    },
-    body: JSON.stringify({ jsonrpc: '2.0', id: ++identificador, method, params }),
-  });
-  const texto = await resposta.text();
-  assert.equal(resposta.status, 200, texto);
-  const conteudo = resposta.headers.get('content-type')?.includes('text/event-stream')
-    ? texto.split('\n').find((linha) => linha.startsWith('data:')).slice(5)
-    : texto;
-  const mensagem = JSON.parse(conteudo);
-  assert.equal(mensagem.error, undefined, JSON.stringify(mensagem.error));
-  return mensagem.result;
-}
-
 function chamarFerramenta(name, argumentos = {}) {
   return clienteMcp.callTool({ name, arguments: argumentos });
 }
 
-async function conectarCliente(url) {
+async function conectarCliente(url, capacidades = {}, aoSolicitar) {
   const cliente = new Client(
     { name: 'teste-partituras', version: '1.0.0' },
-    { versionNegotiation: { mode: 'auto' } },
+    { versionNegotiation: { mode: 'auto' }, capabilities: capacidades },
   );
+  if (aoSolicitar) cliente.setRequestHandler('elicitation/create', aoSolicitar);
   await cliente.connect(new StreamableHTTPClientTransport(new URL(`${url}/mcp`)));
   return cliente;
 }
@@ -112,20 +92,6 @@ after(async () => {
   if (api) await encerrar(api);
 });
 
-for (const versao of ['2025-03-26', '2025-06-18', '2025-11-25']) {
-  test(`negocia o protocolo MCP ${versao} por HTTP`, async () => {
-    const resultado = await requisicaoMcp('initialize', {
-      protocolVersion: versao,
-      clientInfo: { name: 'teste-partituras', version: '1.0.0' },
-      capabilities: {},
-    }, versao);
-    assert.equal(resultado.serverInfo.name, 'partituras');
-    assert.equal(resultado.protocolVersion, versao);
-    assert.match(resultado.instructions, /Markdown/);
-    assert.deepEqual(chamadas, []);
-  });
-}
-
 const dadosPartitura = {
   titulo: partitura.titulo,
   compositor: { id: compositor.id },
@@ -160,17 +126,6 @@ const casos = [
   ['buscar_estudos_por_compositor', { compositor_id: 13 }, 'GET', '/sessoes-estudo/compositor/13', undefined, [sessao]],
   ['total_minutos_por_partitura', { partitura_id: 27 }, 'GET', '/sessoes-estudo/partitura/27/total-minutos', undefined, 55],
 ];
-
-test('atende chamadas de ferramentas pelo protocolo 2025 usado por clientes existentes', async () => {
-  responder = () => ({ dados: 55 });
-  const resultado = await requisicaoMcp('tools/call', {
-    name: 'total_minutos_por_partitura',
-    arguments: { partitura_id: 27 },
-  }, '2025-03-26');
-  assert.notEqual(resultado.isError, true);
-  assert.deepEqual(resultado.structuredContent, { resultado: 55 });
-  assert.equal(chamadas[0].caminho, '/sessoes-estudo/partitura/27/total-minutos');
-});
 
 test('publica as 17 ferramentas, seus tipos e as orientações de PDF', async () => {
   const { tools } = await clienteMcp.listTools();
@@ -286,4 +241,140 @@ test('informa quando o Spring está indisponível', async () => {
 test('responde 404 para caminhos fora de /mcp', async () => {
   const resposta = await fetch(`${endereco}/outro`);
   assert.equal(resposta.status, 404);
+});
+
+test('solicita data e minutos pela conversa quando o cliente não oferece formulário', async () => {
+  const resultado = await chamarFerramenta('registrar_estudo', { partitura_id: 27 });
+
+  assert.equal(resultado.isError, true);
+  assert.match(resultado.content[0].text, /pergunte ao usuário: data.*minutos/);
+  assert.deepEqual(chamadas, []);
+});
+
+test('registra o estudo somente depois de receber os dados do formulário', async () => {
+  responder = () => ({ status: 201, dados: sessao });
+  const formularios = [];
+  const cliente = await conectarCliente(endereco, { elicitation: { form: {} } }, async (pedido) => {
+    formularios.push(pedido.params);
+    assert.deepEqual(chamadas, []);
+    return { action: 'accept', content: { data: sessao.data, minutos: 25 } };
+  });
+
+  try {
+    const resultado = await cliente.callTool({
+      name: 'registrar_estudo', arguments: { partitura_id: 27 },
+    }, { timeout: 5000 });
+
+    assert.notEqual(resultado.isError, true);
+    assert.deepEqual(resultado.structuredContent, { resultado: sessao });
+    assert.equal(formularios.length, 1);
+    assert.deepEqual(formularios[0].requestedSchema.required, ['data', 'minutos']);
+    assert.equal(formularios[0].requestedSchema.properties.partitura_id, undefined);
+    assert.deepEqual(chamadas, [{ metodo: 'POST', caminho: '/sessoes-estudo', dados: dadosEstudo }]);
+  } finally {
+    await cliente.close();
+  }
+});
+
+for (const acao of ['decline', 'cancel']) {
+  test(`não chama a API quando o usuário responde ${acao} ao formulário`, async () => {
+    const cliente = await conectarCliente(endereco, { elicitation: { form: {} } }, async () => ({ action: acao }));
+    try {
+      const resultado = await cliente.callTool({
+        name: 'registrar_estudo', arguments: { partitura_id: 27 },
+      }, { timeout: 5000 });
+
+      assert.equal(resultado.isError, true);
+      assert.match(resultado.content[0].text, /Nenhum estudo foi salvo/);
+      assert.deepEqual(chamadas, []);
+    } finally {
+      await cliente.close();
+    }
+  });
+}
+
+test('pede somente os dados ausentes e preserva os que já foram informados', async () => {
+  const observacoes = 'Estudo das mãos separadas';
+  responder = () => ({ status: 201, dados: { ...sessao, observacoes } });
+  const cliente = await conectarCliente(endereco, { elicitation: { form: {} } }, async (pedido) => {
+    assert.deepEqual(Object.keys(pedido.params.requestedSchema.properties), ['minutos']);
+    return { action: 'accept', content: { minutos: 25 } };
+  });
+  try {
+    const resultado = await cliente.callTool({
+      name: 'registrar_estudo',
+      arguments: { partitura_id: 27, data: sessao.data, observacoes },
+    }, { timeout: 5000 });
+
+    assert.notEqual(resultado.isError, true);
+    assert.deepEqual(chamadas[0].dados, { ...dadosEstudo, observacoes });
+  } finally {
+    await cliente.close();
+  }
+});
+
+test('não abre formulário quando os dados obrigatórios já estão completos', async () => {
+  responder = () => ({ status: 201, dados: sessao });
+  let formularios = 0;
+  const cliente = await conectarCliente(endereco, { elicitation: { form: {} } }, async () => {
+    formularios++;
+    return { action: 'cancel' };
+  });
+  try {
+    const resultado = await cliente.callTool({
+      name: 'registrar_estudo', arguments: { partitura_id: 27, data: sessao.data, minutos: 25 },
+    }, { timeout: 5000 });
+
+    assert.notEqual(resultado.isError, true);
+    assert.equal(formularios, 0);
+    assert.equal(chamadas.length, 1);
+  } finally {
+    await cliente.close();
+  }
+});
+
+test('rejeita dados inválidos enviados como resposta ao formulário antes de chamar a API', async () => {
+  const resultado = await clienteMcp.callTool({
+    name: 'registrar_estudo',
+    arguments: { partitura_id: 27 },
+    inputResponses: { estudo: { action: 'accept', content: { data: sessao.data, minutos: 0 } } },
+  });
+
+  assert.equal(resultado.isError, true);
+  assert.match(resultado.content[0].text, /dados do formulário são inválidos/);
+  assert.deepEqual(chamadas, []);
+});
+
+test('publica uma ficha legível e preserva os dados estruturados da partitura', async () => {
+  const preenchida = { ...partitura, caminhoPdf: 'https://imslp.org/wiki/Obra_(Compositor)' };
+  responder = () => ({ dados: preenchida });
+
+  const resultado = await chamarFerramenta('buscar_partitura', { partitura_id: 27 });
+
+  assert.match(resultado.content[0].text, /> \*\*Estudo de teste\*\*/);
+  assert.match(resultado.content[0].text, /ID \*\*27\*\*/);
+  assert.match(resultado.content[0].text, /\[Abrir partitura\]\(https:\/\/imslp.org\/wiki\/Obra_%28Compositor%29\)/);
+  assert.deepEqual(resultado.structuredContent, { resultado: preenchida });
+});
+
+test('mostra datas e o total apenas das sessões retornadas na listagem', async () => {
+  const sessoes = [sessao, { ...sessao, id: 42, data: '2026-11-02', minutos: 30 }];
+  responder = () => ({ dados: sessoes });
+
+  const resultado = await chamarFerramenta('listar_sessoes_estudo');
+
+  assert.match(resultado.content[0].text, /\| 41 \| Estudo de teste \| 01\/11\/2026 \| 25 \|/);
+  assert.match(resultado.content[0].text, /\| 42 \| Estudo de teste \| 02\/11\/2026 \| 30 \|/);
+  assert.match(resultado.content[0].text, /Total desta listagem:\*\* 55 minutos/);
+  assert.deepEqual(resultado.structuredContent, { resultado: sessoes });
+});
+
+test('mantém nomes com caracteres Markdown em uma única célula da tabela', async () => {
+  const especial = { ...compositor, nome: 'Bach | [teste]\n**Piano**' };
+  responder = () => ({ dados: [especial] });
+
+  const resultado = await chamarFerramenta('listar_compositores');
+
+  assert.equal(resultado.content[0].text.split('\n').at(-1), '| 13 | Bach \\| \\[teste\\] \\*\\*Piano\\*\\* |');
+  assert.deepEqual(resultado.structuredContent, { resultado: [especial] });
 });

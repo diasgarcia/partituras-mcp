@@ -2,30 +2,26 @@ import type { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod';
 import type { ClienteApi } from '../api/cliente-api.js';
 import { esquemaSessaoEstudo } from '../esquemas/respostas.js';
+import { esquemaCadastroEstudo, esquemaDadosEstudo, prepararEstudo } from '../formularios/estudo.js';
 import { executarFerramenta } from './resultado.js';
 
 const esquemaId = z.number().int().positive();
-const camposEstudo = {
-  partitura_id: esquemaId.describe('ID de uma partitura existente.'),
-  data: z.iso.date().describe('Data do estudo no formato AAAA-MM-DD.'),
-  minutos: z.number().int().positive(),
-  observacoes: z.string().max(1000).nullable().default(null),
-};
+const camposEstudo = esquemaDadosEstudo.shape;
 
 export function registrarFerramentasSessoesEstudo(servidor: McpServer, cliente: ClienteApi): void {
   // Create - registrar sessão de estudo
   servidor.registerTool('registrar_estudo', {
-    description: 'Registra um estudo de uma partitura. Informe a data no formato AAAA-MM-DD.',
-    inputSchema: z.object(camposEstudo),
+    description: 'Registra um estudo de uma partitura. Informe a data no formato AAAA-MM-DD. Se faltarem data ou minutos, solicita os dados em um formulário quando o cliente tiver suporte; nos demais clientes, peça os dados pela conversa e chame novamente. Não invente valores para preencher campos ausentes.',
+    inputSchema: esquemaCadastroEstudo,
     outputSchema: z.object({ resultado: esquemaSessaoEstudo }),
-  }, async ({ partitura_id, data, minutos, observacoes }) => executarFerramenta(
-    () => cliente.requisicao('POST', '/sessoes-estudo', esquemaSessaoEstudo, {
-      partitura: { id: partitura_id },
-      data,
-      minutos,
-      observacoes,
-    }),
-  ));
+  }, async (dados, contexto) => {
+    const preparacao = await prepararEstudo(dados, contexto);
+    if ('resposta' in preparacao) return preparacao.resposta;
+    const { partitura_id, data, minutos, observacoes } = preparacao.dados;
+    return executarFerramenta(() => cliente.requisicao('POST', '/sessoes-estudo', esquemaSessaoEstudo, {
+      partitura: { id: partitura_id }, data, minutos, observacoes,
+    }));
+  });
 
   // Read - listar sessões de estudo
   servidor.registerTool('listar_sessoes_estudo', {
