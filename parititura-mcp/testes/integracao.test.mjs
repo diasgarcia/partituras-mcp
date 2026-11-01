@@ -121,6 +121,7 @@ for (const versao of ['2025-03-26', '2025-06-18', '2025-11-25']) {
     }, versao);
     assert.equal(resultado.serverInfo.name, 'partituras');
     assert.equal(resultado.protocolVersion, versao);
+    assert.match(resultado.instructions, /Markdown/);
     assert.deepEqual(chamadas, []);
   });
 }
@@ -173,6 +174,7 @@ test('atende chamadas de ferramentas pelo protocolo 2025 usado por clientes exis
 
 test('publica as 17 ferramentas, seus tipos e as orientações de PDF', async () => {
   const { tools } = await clienteMcp.listTools();
+  assert.match(clienteMcp.getInstructions(), /Markdown/);
   assert.deepEqual(tools.map((ferramenta) => ferramenta.name).sort(), casos.map(([nome]) => nome).sort());
   for (const ferramenta of tools) {
     assert.equal(ferramenta.inputSchema.type, 'object');
