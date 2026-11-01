@@ -42,9 +42,19 @@ npm --prefix parititura-mcp run check
 npm --prefix parititura-mcp test
 ```
 
+Os testes do MCP estão em `parititura-mcp/testes/unitarios`, escritos em TypeScript com Vitest e separados em **Arrange, Act e Assert (AAA)**. Usam mocks e não precisam iniciar API, MCP ou banco. Para executá-los a cada alteração, use `npm --prefix parititura-mcp run test:watch`.
+
 As variáveis opcionais `PARTITURAS_API_URL` e `PORT` alteram o endereço da API e a porta do MCP. Os padrões são `http://localhost:8080` e `8000`.
 
 A versão Python está em `partituras-mcp-old`. Sua feature e instalação ficaram comentadas em `.devcontainer/devcontainer.json` e `.devcontainer/preparar-ambiente.sh`. Para utilizá-la, habilite essas linhas, reconstrua o container e execute `python partituras-mcp-old/partituras_mcp.py` no segundo terminal.
+
+## Apresentação das respostas
+
+O MCP envia à LLM instruções para responder em português, com fichas para registros individuais, tabelas para listagens, links de PDF e totais em minutos. As ferramentas também retornam esse texto em Markdown e mantêm os dados tipados em `structuredContent`. JSON na resposta final fica reservado aos pedidos explícitos do usuário. A apresentação da LLM segue essas instruções; a renderização visual depende do cliente.
+
+Ao registrar um estudo sem data ou minutos, o MCP solicita os dados por um formulário padrão MCP, se o cliente anunciar suporte. Sem formulário, os dados são pedidos pela conversa. Cancelar ou recusar o formulário não salva o estudo. Com os dados completos, o cadastro segue normalmente.
+
+Para testar esta branch, reinicie o MCP com `npm --prefix parititura-mcp run dev` e reconecte o cliente em uma nova conversa para carregar as instruções. Os exemplos estão no [USE-CASE.md](USE-CASE.md).
 
 ## Portas e acesso
 

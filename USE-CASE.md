@@ -107,3 +107,29 @@ Depois, liste os compositores, as partituras e as sessões para confirmar que os
 Ferramentas de exclusão: `excluir_estudo`, `excluir_partitura` e `excluir_compositor`.
 
 Esperado: os registros do teste removidos, sem conflito de relacionamento.
+
+## 9. Conferir a apresentação e o formulário (branch de teste)
+
+Com o MCP reiniciado e o cliente reconectado em uma nova conversa:
+
+```text
+Liste as partituras cadastradas. Depois, escolha uma delas e mostre seus dados e o total de minutos estudados.
+```
+
+Esperado: tabela para a listagem, ficha para a partitura, PDF como link quando cadastrado e total com a unidade minutos, sem JSON na resposta final.
+
+Para testar o formulário, substitua `<ID>` por uma partitura existente:
+
+```text
+Quero registrar um estudo da partitura de ID <ID>. Chame registrar_estudo informando somente partitura_id; vou preencher a data e os minutos quando forem solicitados.
+```
+
+Esperado: formulário no cliente que oferece suporte a formulários MCP; nos demais, perguntas na conversa. Nenhum cadastro deve ocorrer antes de fornecer os dados obrigatórios. Recuse ou cancele o formulário na primeira tentativa e confira que não houve cadastro. Repita o pedido, preencha os dados e confira o registro retornado.
+
+Com todos os dados informados, o formulário não deve ser aberto:
+
+```text
+Registre um estudo da partitura de ID <ID> na data 2026-11-01, com 15 minutos e observações nulas. Mostre o registro criado.
+```
+
+Guarde os IDs das sessões criadas neste passo e peça sua exclusão ao terminar o teste.

@@ -4,21 +4,21 @@ import { registrarFerramentasCompositores } from './ferramentas/compositores.js'
 import { registrarFerramentasPartituras } from './ferramentas/partituras.js';
 import { registrarFerramentasSessoesEstudo } from './ferramentas/sessoes-estudo.js';
 
-const instrucoesApresentacao = `Apresente os resultados das ferramentas de partituras em português, com Markdown claro e conciso.
-Transforme os dados retornados em uma resposta para o usuário. Exiba JSON somente quando ele pedir explicitamente esse formato.
+const instrucoesApresentacao = `Responda em português e siga este padrão de apresentação em Markdown ao usar as ferramentas de partituras:
 
-- Em cadastros e atualizações, confirme a operação e destaque o nome ou título e o ID retornado.
-- Para vários cadastros, use uma tabela com as colunas Registro, Nome ou título e ID, sem repetir os mesmos dados em outras listas.
-- Nas listagens, use tabelas com os campos úteis ao pedido. Identifique compositores e partituras pelos nomes, além dos IDs necessários.
-- Nas sessões de estudo, apresente a partitura, a data e os minutos. Mostre somas com a unidade, por exemplo: 55 minutos de estudo.
-- Apresente datas ao usuário como DD/MM/AAAA; envie datas às ferramentas no formato AAAA-MM-DD exigido por elas.
-- Exiba PDFs como links Markdown. Quando não houver link, escreva "Sem PDF cadastrado". Respeite pedidos explícitos para deixar o PDF vazio.
-- Se uma consulta não retornar registros, explique isso em uma frase.
-- Se uma operação falhar, explique o problema de forma compreensível e preserve informações úteis, como o ID e o código HTTP. Nunca confirme sucesso quando a ferramenta retornar erro.
-- Use apenas os dados efetivamente retornados pelas ferramentas. Não invente IDs, registros, links ou resultados.
-- Evite mostrar nomes internos de ferramentas, o campo resultado, payloads e logs na resposta final. Esses detalhes só devem aparecer quando forem solicitados.
+- Cadastro ou atualização de um registro: confirme a operação e apresente uma ficha em citação Markdown, com nome ou título em destaque, ID e os campos relevantes em linhas separadas.
+- Vários cadastros ou atualizações: apresente uma única tabela com Registro, Nome ou título e ID. Não repita os mesmos dados em outras listas.
+- Listagens: use tabelas com os campos úteis ao pedido. Mostre nomes além dos IDs necessários para identificar os registros e seus relacionamentos.
+- Sessões de estudo: mostre partitura, data e minutos. Destaque os totais com a unidade e deixe claro quando a soma corresponde apenas à listagem exibida.
+- Datas: exiba DD/MM/AAAA ao usuário e envie AAAA-MM-DD às ferramentas. PDF: use links Markdown; quando não houver, escreva "Sem PDF cadastrado".
+- Exclusões: confirme de forma breve somente depois do sucesso da ferramenta. Consultas vazias: informe em uma frase que não há registros.
+- Erros: explique o problema em linguagem clara e preserve o código HTTP quando houver. Nunca apresente uma operação como concluída se a ferramenta falhou.
 
-Estas orientações se aplicam à apresentação das respostas; respeite outro formato solicitado pelo usuário.`;
+Use apenas os dados confirmados pelas ferramentas. Não invente registros, IDs, links ou resultados.
+Se faltarem dados necessários, solicite-os antes de cadastrar. Use o formulário quando o cliente oferecer suporte; caso contrário, pergunte na conversa. Respeite cancelamentos e pedidos para deixar campos opcionais vazios.
+Evite emojis. Quando fizer sentido, prefira emoticons de texto, como :] e :[, com moderação.
+Não exponha JSON, payloads, logs, nomes internos de ferramentas ou o campo resultado na resposta final, salvo se o usuário solicitar esses detalhes.
+Mantenha as respostas concisas e siga o padrão acima, respeitando outro formato explicitamente pedido pelo usuário.`;
 
 export function criarServidorMcp(cliente: ClienteApi): McpServer {
   const servidor = new McpServer(

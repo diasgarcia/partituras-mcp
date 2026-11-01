@@ -1,13 +1,14 @@
 import type { CallToolResult } from '@modelcontextprotocol/server';
+import { formatarErro, formatarResultado, type DadosResultado } from '../apresentacao/formatar-resultado.js';
 
-export async function executarFerramenta<T>(acao: () => Promise<T>): Promise<CallToolResult> {
+export async function executarFerramenta<T extends DadosResultado>(acao: () => Promise<T>): Promise<CallToolResult> {
   try {
     const resultado = await acao();
 
     return {
       content: [{
         type: 'text',
-        text: typeof resultado === 'string' ? resultado : JSON.stringify(resultado),
+        text: formatarResultado(resultado),
       }],
       structuredContent: { resultado },
     };
@@ -16,7 +17,7 @@ export async function executarFerramenta<T>(acao: () => Promise<T>): Promise<Cal
       isError: true,
       content: [{
         type: 'text',
-        text: erro instanceof Error ? erro.message : 'Não foi possível executar a ferramenta.',
+        text: formatarErro(erro),
       }],
     };
   }
