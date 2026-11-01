@@ -6,10 +6,14 @@
   },
 
   "features": {
-    "ghcr.io/devcontainers/features/python:1": {
-      "version": "3.13",
-      "installTools": false
-    }
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "24"
+    },
+    // python depreciado:
+    // "ghcr.io/devcontainers/features/python:1": {
+    //   "version": "3.13",
+    //   "installTools": false
+    // }
   },
 
   "forwardPorts": [8080, 8000, 3306],
@@ -23,7 +27,7 @@
     }
   },
 
-  "postCreateCommand": "/bin/bash .devcontainer/init-mysql.sh && python -m pip install -e ./partituras-mcp && mvn -B -f partituras-api/pom.xml -DskipTests package",
+  "postCreateCommand": "/bin/bash .devcontainer/preparar-ambiente.sh",
 
   "postStartCommand": "service mysql start"
 }

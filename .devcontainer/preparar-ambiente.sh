@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+bash .devcontainer/init-mysql.sh
+npm --prefix parititura-mcp ci
+npm --prefix parititura-mcp run build
+
+# Para usar a versão Python, habilite sua feature no devcontainer.json e esta linha:
+# python -m pip install -e ./partituras-mcp-old
+
+mvn -B -f partituras-api/pom.xml -DskipTests package
