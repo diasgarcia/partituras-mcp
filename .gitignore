@@ -81,3 +81,8 @@ buildNumber.properties
 __pycache__/
 *.py[cod]
 *.egg-info/
+
+# NODE / TYPESCRIPT
+node_modules/
+dist/
+*.tsbuildinfo
