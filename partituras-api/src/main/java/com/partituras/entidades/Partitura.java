@@ -1,7 +1,11 @@
 package com.partituras.entidades;
 
+import com.partituras.entidades.enums.Dificuldade;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -32,7 +36,8 @@ public class Partitura {
 
     private String instrumento;
 
-    private String dificuldade;
+    @Enumerated(EnumType.STRING)
+    private Dificuldade dificuldade;
 
     private String status;
 
