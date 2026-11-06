@@ -1,4 +1,3 @@
-
 # Partituras MCP
 
 CRUD de compositores, partituras e registros de estudo com Spring Boot, MySQL e um servidor MCP em TypeScript.
@@ -47,6 +46,12 @@ Os testes do MCP estão em `partituras-mcp/testes/unitarios`, escritos em TypeSc
 As variáveis opcionais `PARTITURAS_API_URL` e `PORT` alteram o endereço da API e a porta do MCP. Os padrões são `http://localhost:8080` e `8000`.
 
 A versão Python está em `partituras-mcp-old`. Sua feature e instalação ficaram comentadas em `.devcontainer/devcontainer.json` e `.devcontainer/preparar-ambiente.sh`. Para utilizá-la, habilite essas linhas, reconstrua o container e execute `python partituras-mcp-old/partituras_mcp.py` no segundo terminal.
+
+## Adcione o MCP no Opencode
+
+```bash
+opencode mcp add partituras --global --url "https://ubiquitous-journey-wr774q5p6j5w2977w-8000.app.github.dev/mcp"
+```
 
 ## Apresentação das respostas
 

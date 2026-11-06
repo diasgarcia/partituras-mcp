@@ -1,49 +1,51 @@
-# Apresentação rápida do Partituras MCP
+# Apresentação rápida
 
-Inicie a API e o MCP conforme o [README](README.md). Envie os pedidos abaixo, um por vez, na mesma conversa da LLM. Mantenha a API rodando: reiniciá-la recria o banco.
+Envie uma mensagem por vez, na mesma conversa.
 
 ## 1. Cadastrar uma partitura
 
 ```text
-Use o MCP partituras. Encontre Beethoven entre os compositores cadastrados e cadastre uma nova partitura chamada "Für Elise", para Piano, dificuldade Intermediária, status Em andamento e sem PDF.
-
-Mostre a ficha e guarde os IDs retornados. Nos próximos passos, use somente a partitura criada agora, mesmo que já exista outra com o mesmo título.
+Vou começar a estudar a Gymnopédie nº 1, do Erik Satie, no piano. Cadastra essa partitura pra mim. Por enquanto, deixa sem PDF.
 ```
-
-Mostra o cadastro e o vínculo entre partitura e compositor, sem precisar criar outro compositor.
 
 ## 2. Registrar um estudo
 
 ```text
-Registre uma sessão de estudo para essa nova partitura na data de hoje, com 20 minutos e a observação "Pratiquei a introdução com as mãos separadas". Mostre o registro criado e guarde o ID da sessão.
+Hoje pratiquei essa música por 20 minutos. Anota que estudei os acordes da mão esquerda.
 ```
 
-## 3. Atualizar a sessão
+## 3. Atualizar o estudo
 
 ```text
-Atualize essa mesma sessão para 30 minutos e troque a observação por "Consegui tocar a introdução com as duas mãos". Mantenha a data e a partitura. Mostre como ficou.
+Na verdade foram 30 minutos. E troca a observação: consegui juntar as duas mãos, mas ainda estou errando o ritmo.
 ```
 
-## 4. Consultar os estudos e o total
+## 4. Consultar os estudos por compositor
 
 ```text
-Consulte os estudos de Beethoven pela consulta por compositor. Depois, consulte o total de minutos da partitura que criamos agora.
+Quais sessões de estudo tenho das músicas do Erik Satie?
 ```
 
-Mostra as consultas com **JOIN** e **SUM**. O total da nova partitura deve ser **30 minutos**; a listagem do compositor pode incluir estudos de outras partituras.
+Demonstra a consulta nativa com **JOIN**.
 
-## 5. Mostrar um erro tratado
+## 5. Consultar o total de minutos
 
 ```text
-Tente excluir a partitura que criamos agora, mantendo a sessão vinculada. Se houver bloqueio, explique o motivo e consulte a partitura e a sessão para confirmar que continuam salvas. Não remova a sessão para contornar o erro.
+E qual é o total de minutos que já estudei essa Gymnopédie?
 ```
 
-Esperado: **HTTP 409**, pois a partitura tem um estudo vinculado. Mostra a proteção dos relacionamentos e a explicação do erro pela LLM.
+Demonstra a consulta nativa com **SUM**. Esperado: **30 minutos**.
 
-## Se sobrar tempo: concluir a exclusão
+## 6. Mostrar o tratamento de erro
 
 ```text
-Agora exclua primeiro a sessão e depois a partitura criadas nesta apresentação. Preserve Beethoven e todos os registros que já existiam.
+Tenta apagar essa partitura, mas sem apagar meu registro de estudo.
 ```
 
-Mostra que a exclusão funciona quando os vínculos são removidos na ordem correta.
+Esperado: **HTTP 409**, pois existe um estudo vinculado.
+
+## 7. Concluir a exclusão
+
+```text
+Entendi. Então apaga primeiro esse estudo e depois a partitura. Pode manter o Satie cadastrado.
+```
