@@ -10,8 +10,8 @@ No GitHub, abra o repositório e selecione **Code → Codespaces → Create code
 O devcontainer instala Java 21, Maven, Node.js 24 e MySQL 8. Também inicia e configura o banco e executa automaticamente:
 
 ```bash
-npm --prefix parititura-mcp ci
-npm --prefix parititura-mcp run build
+npm --prefix partituras-mcp ci
+npm --prefix partituras-mcp run build
 mvn -B -f partituras-api/pom.xml -DskipTests package
 ```
 
@@ -26,23 +26,23 @@ mvn -f partituras-api/pom.xml spring-boot:run
 **Terminal 2 — MCP:**
 
 ```bash
-npm --prefix parititura-mcp start
+npm --prefix partituras-mcp start
 ```
 
-Para desenvolver com reinício automático, use `npm --prefix parititura-mcp run dev` no segundo terminal. Se o Codespace já existia, execute **Codespaces: Rebuild Container** para instalar o Node.js e as dependências.
+Para desenvolver com reinício automático, use `npm --prefix partituras-mcp run dev` no segundo terminal. Se o Codespace já existia, execute **Codespaces: Rebuild Container** para instalar o Node.js e as dependências.
 
 ## Código do MCP
 
-Em `parititura-mcp/src`, `interfaces` representa os dados da API, `esquemas` valida as respostas, `api` concentra as chamadas ao Spring e `ferramentas` registra as operações MCP por assunto. `http` configura o transporte; `servidor.ts` reúne as ferramentas e `index.ts` inicia o processo.
+Em `partituras-mcp/src`, `interfaces` representa os dados da API, `esquemas` valida as respostas, `api` concentra as chamadas ao Spring e `ferramentas` registra as operações MCP por assunto. `http` configura o transporte; `servidor.ts` reúne as ferramentas e `index.ts` inicia o processo.
 
 O projeto usa o SDK oficial e Zod. Para verificar os tipos e executar os testes:
 
 ```bash
-npm --prefix parititura-mcp run check
-npm --prefix parititura-mcp test
+npm --prefix partituras-mcp run check
+npm --prefix partituras-mcp test
 ```
 
-Os testes do MCP estão em `parititura-mcp/testes/unitarios`, escritos em TypeScript com Vitest e separados em **Arrange, Act e Assert (AAA)**. Usam mocks e não precisam iniciar API, MCP ou banco. Para executá-los a cada alteração, use `npm --prefix parititura-mcp run test:watch`.
+Os testes do MCP estão em `partituras-mcp/testes/unitarios`, escritos em TypeScript com Vitest e separados em **Arrange, Act e Assert (AAA)**. Usam mocks e não precisam iniciar API, MCP ou banco. Para executá-los a cada alteração, use `npm --prefix partituras-mcp run test:watch`.
 
 As variáveis opcionais `PARTITURAS_API_URL` e `PORT` alteram o endereço da API e a porta do MCP. Os padrões são `http://localhost:8080` e `8000`.
 
@@ -54,7 +54,7 @@ O MCP envia à LLM instruções para responder em português, com fichas para re
 
 Ao registrar um estudo sem data ou minutos, o MCP solicita os dados por um formulário padrão MCP, se o cliente anunciar suporte. Sem formulário, os dados são pedidos pela conversa. Cancelar ou recusar o formulário não salva o estudo. Com os dados completos, o cadastro segue normalmente.
 
-Para testar esta branch, reinicie o MCP com `npm --prefix parititura-mcp run dev` e reconecte o cliente em uma nova conversa para carregar as instruções. Os exemplos estão no [USE-CASE.md](USE-CASE.md).
+Para testar esta branch, reinicie o MCP com `npm --prefix partituras-mcp run dev` e reconecte o cliente em uma nova conversa para carregar as instruções. Os exemplos estão no [USE-CASE.md](USE-CASE.md).
 
 ## Portas e acesso
 
