@@ -1,0 +1,24 @@
+.conteudo {
+  max-width: 70rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+.navegacao {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding-top: 0.5rem;
+}
+
+.pagina {
+  padding-block: 1.5rem;
+}
+
+.tabela-rolavel {
+  overflow-x: auto;
+}
+
+.tabela-rolavel table {
+  min-width: 36rem;
+}
