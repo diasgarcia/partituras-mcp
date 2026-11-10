@@ -12,7 +12,7 @@ import type { Compositor } from '../modelos/compositor';
 })
 export class ListaCompositoresComponent {
   protected readonly colunas: readonly (keyof Compositor)[] = [
-    'id', 'nome',
+    'id', 'nome', 'anoNascimento', 'anoFalecimento',
   ];
 
   protected readonly compositores = toSignal(

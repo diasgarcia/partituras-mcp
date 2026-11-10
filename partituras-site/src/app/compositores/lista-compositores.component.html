@@ -19,6 +19,16 @@
       <td mat-cell *matCellDef="let compositor">{{ compositor.nome }}</td>
     </ng-container>
 
+    <ng-container matColumnDef="anoNascimento">
+      <th mat-header-cell *matHeaderCellDef scope="col">Nascimento</th>
+      <td mat-cell *matCellDef="let compositor">{{ compositor.anoNascimento ?? '—' }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="anoFalecimento">
+      <th mat-header-cell *matHeaderCellDef scope="col">Falecimento</th>
+      <td mat-cell *matCellDef="let compositor">{{ compositor.anoFalecimento ?? '—' }}</td>
+    </ng-container>
+
     <tr mat-header-row *matHeaderRowDef="colunas"></tr>
     <tr mat-row *matRowDef="let registro; columns: colunas"></tr>
   </table>
