@@ -59,10 +59,10 @@ const dadosEstudo = {
 };
 
 const casos: CasoFerramenta[] = [
-  { nome: 'cadastrar_compositor', argumentos: { nome: compositor.nome }, metodo: 'POST', caminho: '/compositores', dados: { nome: compositor.nome }, resultado: compositor },
+  { nome: 'cadastrar_compositor', argumentos: { nome: compositor.nome, ano_nascimento: 1980 }, metodo: 'POST', caminho: '/compositores', dados: { nome: compositor.nome, anoNascimento: 1980, anoFalecimento: null }, resultado: compositor },
   { nome: 'listar_compositores', argumentos: {}, metodo: 'GET', caminho: '/compositores', resultado: [compositor] },
   { nome: 'buscar_compositor', argumentos: { compositor_id: 13 }, metodo: 'GET', caminho: '/compositores/13', resultado: compositor },
-  { nome: 'atualizar_compositor', argumentos: { compositor_id: 13, nome: compositor.nome }, metodo: 'PUT', caminho: '/compositores/13', dados: { nome: compositor.nome }, resultado: compositor },
+  { nome: 'atualizar_compositor', argumentos: { compositor_id: 13, nome: compositor.nome, ano_nascimento: 1980, ano_falecimento: null }, metodo: 'PUT', caminho: '/compositores/13', dados: { nome: compositor.nome, anoNascimento: 1980, anoFalecimento: null }, resultado: compositor },
   { nome: 'excluir_compositor', argumentos: { compositor_id: 13 }, metodo: 'DELETE', caminho: '/compositores/13', resultado: 'Compositor excluído.' },
   { nome: 'cadastrar_partitura', argumentos: { titulo: partitura.titulo, compositor_id: 13 }, metodo: 'POST', caminho: '/partituras', dados: dadosPartitura, resultado: partitura },
   { nome: 'listar_partituras', argumentos: {}, metodo: 'GET', caminho: '/partituras', resultado: [partitura] },
@@ -93,6 +93,23 @@ describe('ferramentas MCP', () => {
     expect(requisicao.mock.calls[0]?.[3]).toEqual(caso.dados);
     expect(resultado).toMatchObject({ structuredContent: { resultado: caso.resultado } });
     expect(resultado).not.toHaveProperty('isError', true);
+  });
+
+  it('preserva o nascimento omitido ao limpar o ano de falecimento', async () => {
+    // Arrange
+    const { requisicao, executar } = prepararFerramenta('atualizar_compositor');
+    requisicao.mockResolvedValueOnce({ ...compositor, anoFalecimento: 2020 });
+    requisicao.mockResolvedValueOnce(compositor);
+
+    // Act
+    await executar({ compositor_id: 13, nome: compositor.nome, ano_falecimento: null });
+
+    // Assert
+    expect(requisicao.mock.calls[0]?.slice(0, 2)).toEqual(['GET', '/compositores/13']);
+    expect(requisicao.mock.calls[1]?.slice(0, 2)).toEqual(['PUT', '/compositores/13']);
+    expect(requisicao.mock.calls[1]?.[3]).toEqual({
+      nome: compositor.nome, anoNascimento: 1980, anoFalecimento: null,
+    });
   });
 
   it('preserva o link de PDF informado e monta o relacionamento pelo ID do compositor', async () => {

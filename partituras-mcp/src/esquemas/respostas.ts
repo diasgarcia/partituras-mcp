@@ -6,6 +6,8 @@ import type { SessaoEstudo } from '../interfaces/sessao-estudo.js';
 export const esquemaCompositor: z.ZodType<Compositor> = z.object({
   id: z.number().int(),
   nome: z.string(),
+  anoNascimento: z.number().int().nullable(),
+  anoFalecimento: z.number().int().nullable(),
 });
 
 export const esquemaPartitura: z.ZodType<Partitura> = z.object({

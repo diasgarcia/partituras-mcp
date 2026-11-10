@@ -2,7 +2,9 @@ import type { Compositor } from '../../src/interfaces/compositor.js';
 import type { Partitura } from '../../src/interfaces/partitura.js';
 import type { SessaoEstudo } from '../../src/interfaces/sessao-estudo.js';
 
-export const compositor: Compositor = { id: 13, nome: 'Compositor de teste' };
+export const compositor: Compositor = {
+  id: 13, nome: 'Compositor de teste', anoNascimento: 1980, anoFalecimento: null,
+};
 
 export const partitura: Partitura = {
   id: 27,

@@ -49,7 +49,13 @@ function ficha(registro: Registro): string {
       `> **PDF:** ${linkPdf(registro.caminhoPdf)}`,
     ].join('\n');
   }
-  return `> **${texto(registro.nome)}**\n>\n> **ID do compositor:** ${registro.id}`;
+  return [
+    `> **${texto(registro.nome)}**`,
+    '>',
+    `> **ID do compositor:** ${registro.id}`,
+    `> **Nascimento:** ${registro.anoNascimento ?? 'Não informado'}`,
+    `> **Falecimento:** ${registro.anoFalecimento ?? 'Não informado'}`,
+  ].join('\n');
 }
 
 function tabela(cabecalho: string[], linhas: string[][]): string {
@@ -87,7 +93,10 @@ export function formatarResultado(resultado: DadosResultado): string {
   if (resultado.every((registro) => 'nome' in registro)) {
     return [
       `**Compositores** · ${quantidade}`,
-      tabela(['ID', 'Nome'], resultado.map((compositor) => [String(compositor.id), texto(compositor.nome)])),
+      tabela(['ID', 'Nome', 'Nascimento', 'Falecimento'], resultado.map((compositor) => [
+        String(compositor.id), texto(compositor.nome),
+        String(compositor.anoNascimento ?? '—'), String(compositor.anoFalecimento ?? '—'),
+      ])),
     ].join('\n\n');
   }
   return resultado.map(ficha).join('\n\n');
