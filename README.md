@@ -11,24 +11,33 @@ O devcontainer instala Java 21, Maven, Node.js 24 e MySQL 8. Também inicia e co
 ```bash
 npm --prefix partituras-mcp ci
 npm --prefix partituras-mcp run build
+npm --prefix partituras-site ci
 mvn -B -f partituras-api/pom.xml -DskipTests package
 ```
 
-Com o MySQL iniciado pelo container, execute os comandos abaixo na raiz do projeto, em dois terminais do Codespaces.
+Com o MySQL iniciado pelo container, abra três terminais no Codespaces. Execute cada bloco em um terminal separado, partindo da raiz do projeto.
 
-**Terminal 1 — API:**
+**Terminal 1 — API**
 
 ```bash
 mvn -f partituras-api/pom.xml spring-boot:run
 ```
 
-**Terminal 2 — MCP:**
+**Terminal 2 — MCP**
 
 ```bash
 npm --prefix partituras-mcp start
 ```
 
-Para desenvolver com reinício automático, use `npm --prefix partituras-mcp run dev` no segundo terminal. Se o Codespace já existia, execute **Codespaces: Rebuild Container** para instalar o Node.js e as dependências.
+**Terminal 3 — Site Angular**
+
+```bash
+npm --prefix partituras-site start
+```
+
+Abra a porta **4200** na aba **Ports**. No computador, acesse `http://localhost:4200`.
+
+Para desenvolver com reinício automático, use `npm --prefix partituras-mcp run dev` no segundo terminal. Em um Codespace já criado, execute **Codespaces: Rebuild Container** para aplicar a preparação atualizada.
 
 ## Código do MCP
 
@@ -68,6 +77,7 @@ Para testar esta branch, reinicie o MCP com `npm --prefix partituras-mcp run dev
 | API Spring | 8080  | http://localhost:8080     |
 | MCP HTTP   | 8000  | http://localhost:8000/mcp |
 | MySQL      | 3306  | localhost:3306            |
+| Site Angular | 4200 | http://localhost:4200     |
 
 MySQL: banco `mcp-partituras`, usuário `rafael`, senha `q1w2e3`.
 

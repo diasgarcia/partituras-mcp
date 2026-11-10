@@ -1,0 +1,53 @@
+<h1 id="titulo-partituras">Partituras</h1>
+
+@let registros = partituras();
+@if (registros === undefined) {
+  <mat-progress-bar mode="indeterminate" aria-label="Carregando partituras" />
+} @else if (registros === null) {
+  <p role="alert">Não foi possível carregar as partituras.</p>
+} @else if (!registros.length) {
+  <p>Nenhuma partitura cadastrada.</p>
+} @else {
+  <div class="tabela-rolavel" role="region" aria-labelledby="titulo-partituras" tabindex="0">
+    <table mat-table [dataSource]="registros" aria-labelledby="titulo-partituras">
+      <ng-container matColumnDef="titulo">
+        <th mat-header-cell *matHeaderCellDef scope="col">Título</th>
+        <td mat-cell *matCellDef="let partitura">{{ partitura.titulo }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="compositor">
+        <th mat-header-cell *matHeaderCellDef scope="col">Compositor</th>
+        <td mat-cell *matCellDef="let partitura">{{ partitura.compositor.nome }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="instrumento">
+        <th mat-header-cell *matHeaderCellDef scope="col">Instrumento</th>
+        <td mat-cell *matCellDef="let partitura">{{ partitura.instrumento ?? '—' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="dificuldade">
+        <th mat-header-cell *matHeaderCellDef scope="col">Dificuldade</th>
+        <td mat-cell *matCellDef="let partitura">{{ partitura.dificuldade ?? '—' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef scope="col">Status</th>
+        <td mat-cell *matCellDef="let partitura">{{ partitura.status ?? '—' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="caminhoPdf">
+        <th mat-header-cell *matHeaderCellDef scope="col">PDF</th>
+        <td mat-cell *matCellDef="let partitura">
+          @if (partitura.caminhoPdf; as pdf) {
+            <a matButton [href]="pdf" target="_blank" rel="noopener noreferrer">Abrir PDF</a>
+          } @else {
+            —
+          }
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="colunas"></tr>
+      <tr mat-row *matRowDef="let registro; columns: colunas"></tr>
+    </table>
+  </div>
+}

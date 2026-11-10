@@ -16,7 +16,11 @@
     // }
   },
 
-  "forwardPorts": [8080, 8000, 3306],
+  "forwardPorts": [8080, 8000, 3306, 4200],
+
+  "mounts": [
+    "source=${devcontainerId}-partituras-site-node-modules,target=${containerWorkspaceFolder}/partituras-site/node_modules,type=volume"
+  ],
 
   "customizations": {
     "vscode": {

@@ -1,0 +1,23 @@
+<header>
+  <mat-toolbar>Acervo de partituras</mat-toolbar>
+</header>
+
+<main class="conteudo">
+  <nav class="navegacao" aria-label="Seções do acervo">
+    @for (secao of secoes; track secao.caminho) {
+      <a
+        [matButton]="rota.isActive ? 'tonal' : 'text'"
+        [routerLink]="secao.caminho"
+        routerLinkActive
+        ariaCurrentWhenActive="page"
+        #rota="routerLinkActive"
+      >
+        {{ secao.rotulo }}
+      </a>
+    }
+  </nav>
+
+  <div class="pagina">
+    <router-outlet />
+  </div>
+</main>
