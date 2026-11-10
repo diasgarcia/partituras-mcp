@@ -8,15 +8,22 @@ const esquemaId = z.number().int().positive().describe('ID do compositor cadastr
 const esquemaNome = z.string().min(1).max(255).refine((nome) => nome.trim().length > 0, {
   message: 'Informe o nome do compositor.',
 });
+const esquemaAno = z.number().int().positive().nullable().optional();
+const esquemaAnos = {
+  ano_nascimento: esquemaAno.describe('Ano de nascimento, quando conhecido.'),
+  ano_falecimento: esquemaAno.describe('Ano de falecimento. Use null se estiver vivo ou o ano for desconhecido.'),
+};
 
 export function registrarFerramentasCompositores(servidor: McpServer, cliente: ClienteApi): void {
   // Create
   servidor.registerTool('cadastrar_compositor', {
     description: 'Cadastra um compositor e retorna o registro com o ID gerado.',
-    inputSchema: z.object({ nome: esquemaNome }),
+    inputSchema: z.object({ nome: esquemaNome, ...esquemaAnos }),
     outputSchema: z.object({ resultado: esquemaCompositor }),
-  }, async ({ nome }) => executarFerramenta(
-    () => cliente.requisicao('POST', '/compositores', esquemaCompositor, { nome }),
+  }, async ({ nome, ano_nascimento, ano_falecimento }) => executarFerramenta(
+    () => cliente.requisicao('POST', '/compositores', esquemaCompositor, {
+      nome, anoNascimento: ano_nascimento ?? null, anoFalecimento: ano_falecimento ?? null,
+    }),
   ));
 
   // Read - listar compositores
@@ -41,12 +48,21 @@ export function registrarFerramentasCompositores(servidor: McpServer, cliente: C
 
   // Update
   servidor.registerTool('atualizar_compositor', {
-    description: 'Atualiza o nome de um compositor existente.',
-    inputSchema: z.object({ compositor_id: esquemaId, nome: esquemaNome }),
+    description: 'Atualiza um compositor existente. Preserve os anos omitidos e use null para limpar um ano.',
+    inputSchema: z.object({ compositor_id: esquemaId, nome: esquemaNome, ...esquemaAnos }),
     outputSchema: z.object({ resultado: esquemaCompositor }),
-  }, async ({ compositor_id, nome }) => executarFerramenta(
-    () => cliente.requisicao('PUT', `/compositores/${compositor_id}`, esquemaCompositor, { nome }),
-  ));
+  }, async ({ compositor_id, nome, ano_nascimento, ano_falecimento }) => executarFerramenta(async () => {
+    const caminho = `/compositores/${compositor_id}`;
+    const atual = ano_nascimento === undefined || ano_falecimento === undefined
+      ? await cliente.requisicao('GET', caminho, esquemaCompositor)
+      : undefined;
+
+    return cliente.requisicao('PUT', caminho, esquemaCompositor, {
+      nome,
+      anoNascimento: ano_nascimento === undefined ? atual?.anoNascimento : ano_nascimento,
+      anoFalecimento: ano_falecimento === undefined ? atual?.anoFalecimento : ano_falecimento,
+    });
+  }));
 
   // Delete
   servidor.registerTool('excluir_compositor', {

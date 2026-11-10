@@ -37,6 +37,18 @@
       "type": "string"
     },
     {
+      "key": "compositor_ano_nascimento",
+      "value": "1862",
+      "description": "Ano de nascimento do compositor. Use null se for desconhecido.",
+      "type": "string"
+    },
+    {
+      "key": "compositor_ano_falecimento",
+      "value": "1918",
+      "description": "Ano de falecimento do compositor. Use null se estiver vivo ou o ano for desconhecido.",
+      "type": "string"
+    },
+    {
       "key": "partitura_titulo",
       "value": "Clair de Lune",
       "description": "Título enviado no cadastro e na atualização da partitura.",
@@ -163,7 +175,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"{{compositor_nome}}\"\n}",
+              "raw": "{\n  \"nome\": \"{{compositor_nome}}\",\n  \"anoNascimento\": {{compositor_ano_nascimento}},\n  \"anoFalecimento\": {{compositor_ano_falecimento}}\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -211,7 +223,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"{{compositor_nome}}\"\n}",
+              "raw": "{\n  \"nome\": \"{{compositor_nome}}\",\n  \"anoNascimento\": {{compositor_ano_nascimento}},\n  \"anoFalecimento\": {{compositor_ano_falecimento}}\n}",
               "options": {
                 "raw": {
                   "language": "json"

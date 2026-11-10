@@ -1,5 +1,6 @@
 package com.partituras.controladores;
 
+import java.time.Year;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -51,6 +52,8 @@ public class CompositorControlador {
 
         Compositor novo = Compositor.builder()
                 .nome(compositor.getNome())
+                .anoNascimento(compositor.getAnoNascimento())
+                .anoFalecimento(compositor.getAnoFalecimento())
                 .build();
 
         return compositorRepositorio.save(novo);
@@ -66,6 +69,8 @@ public class CompositorControlador {
         Compositor atualizado = Compositor.builder()
                 .id(existente.getId())
                 .nome(compositor.getNome())
+                .anoNascimento(compositor.getAnoNascimento())
+                .anoFalecimento(compositor.getAnoFalecimento())
                 .build();
 
         return compositorRepositorio.save(atualizado);
@@ -90,6 +95,17 @@ public class CompositorControlador {
         if (compositor.getNome() == null || compositor.getNome().isBlank() || compositor.getNome().length() > 255) {
 
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe um nome com até 255 caracteres");
+        }
+
+        Integer nascimento = compositor.getAnoNascimento();
+        Integer falecimento = compositor.getAnoFalecimento();
+        int anoAtual = Year.now().getValue();
+        if ((nascimento != null && (nascimento < 1 || nascimento > anoAtual))
+                || (falecimento != null && (falecimento < 1 || falecimento > anoAtual))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe anos entre 1 e " + anoAtual);
+        }
+        if (nascimento != null && falecimento != null && falecimento < nascimento) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "O falecimento não pode ser anterior ao nascimento");
         }
     }
 }

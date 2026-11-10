@@ -48,7 +48,7 @@ describe('formatarResultado', () => {
     const resultado = formatarResultado(registros);
 
     // Assert
-    expect(resultado.split('\n').at(-1)).toBe('| 13 | Bach \\| \\[teste\\] \\*\\*Piano\\*\\* |');
+    expect(resultado.split('\n').at(-1)).toBe('| 13 | Bach \\| \\[teste\\] \\*\\*Piano\\*\\* | 1980 | — |');
   });
 
   it('apresenta datas brasileiras e soma somente as sessões recebidas', () => {

@@ -27,4 +27,8 @@ public class Compositor {
 
     @Column(nullable = false)
     private String nome;
+
+    private Integer anoNascimento;
+
+    private Integer anoFalecimento;
 }
