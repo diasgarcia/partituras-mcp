@@ -23,6 +23,11 @@
   padding-block: 1.5rem;
 }
 
+.campo-busca {
+  width: 100%;
+  max-width: 24rem;
+}
+
 .tabela-rolavel {
   overflow-x: auto;
 }

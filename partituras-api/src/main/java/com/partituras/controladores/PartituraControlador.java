@@ -2,6 +2,9 @@ package com.partituras.controladores;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -40,6 +44,27 @@ public class PartituraControlador {
 
         return partituraRepositorio.findAll();
     }
+
+    @GetMapping(params = "page")
+    public PaginaPartituras listarPaginado(
+            @RequestParam("page") int pagina,
+            @RequestParam(name = "size", defaultValue = "5") int tamanho,
+            @RequestParam(defaultValue = "") String busca) {
+
+        if (pagina < 0 || tamanho < 1 || tamanho > 100) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe uma página a partir de zero e um tamanho entre 1 e 100");
+        }
+
+        PageRequest paginacao = PageRequest.of(pagina, tamanho, Sort.by("id"));
+        String termo = busca.strip();
+        Page<Partitura> partituras = termo.isEmpty()
+                ? partituraRepositorio.findAll(paginacao)
+                : partituraRepositorio.findByTituloContainingIgnoreCaseOrCompositorNomeContainingIgnoreCase(termo, termo, paginacao);
+
+        return new PaginaPartituras(partituras.getContent(), partituras.getTotalElements());
+    }
+
+    public record PaginaPartituras(List<Partitura> conteudo, long total) {}
 
     @GetMapping("/{id}")
     public Partitura buscar(@PathVariable Long id) {

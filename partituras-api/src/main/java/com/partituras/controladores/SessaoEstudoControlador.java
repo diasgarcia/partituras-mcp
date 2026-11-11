@@ -2,6 +2,9 @@ package com.partituras.controladores;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -23,6 +27,8 @@ import com.partituras.repositorios.SessaoEstudoRepositorio;
 @RestController
 @RequestMapping("/sessoes-estudo")
 public class SessaoEstudoControlador {
+
+    private static final Sort ORDEM_ESTUDOS = Sort.by("data", "id");
 
     private final SessaoEstudoRepositorio sessaoEstudoRepositorio;
     private final PartituraRepositorio partituraRepositorio;
@@ -38,8 +44,29 @@ public class SessaoEstudoControlador {
     @GetMapping
     public List<SessaoEstudo> listar() {
 
-        return sessaoEstudoRepositorio.findAll();
+        return sessaoEstudoRepositorio.findAll(ORDEM_ESTUDOS);
     }
+
+    @GetMapping(params = "page")
+    public PaginaSessoesEstudo listarPaginado(
+            @RequestParam("page") int pagina,
+            @RequestParam(name = "size", defaultValue = "5") int tamanho,
+            @RequestParam(defaultValue = "") String busca) {
+
+        if (pagina < 0 || tamanho < 1 || tamanho > 100) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe uma página a partir de zero e um tamanho entre 1 e 100");
+        }
+
+        PageRequest paginacao = PageRequest.of(pagina, tamanho, ORDEM_ESTUDOS);
+        String titulo = busca.strip();
+        Page<SessaoEstudo> sessoes = titulo.isEmpty()
+                ? sessaoEstudoRepositorio.findAll(paginacao)
+                : sessaoEstudoRepositorio.findByPartituraTituloContainingIgnoreCase(titulo, paginacao);
+
+        return new PaginaSessoesEstudo(sessoes.getContent(), sessoes.getTotalElements());
+    }
+
+    public record PaginaSessoesEstudo(List<SessaoEstudo> conteudo, long total) {}
 
     @GetMapping("/{id}")
     public SessaoEstudo buscar(@PathVariable Long id) {

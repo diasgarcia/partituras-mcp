@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { catchError, of } from 'rxjs';
 import { PartiturasApiService } from '../api/partituras-api.service';
+import { criarListaPaginada } from '../lista-paginada';
 import type { Compositor } from '../modelos/compositor';
 
 @Component({
@@ -15,7 +14,8 @@ export class ListaCompositoresComponent {
     'id', 'nome', 'anoNascimento', 'anoFalecimento',
   ];
 
-  protected readonly compositores = toSignal(
-    inject(PartiturasApiService).listarCompositores().pipe(catchError(() => of(null))),
+  private readonly api = inject(PartiturasApiService);
+  protected readonly listagem = criarListaPaginada(
+    (pagina, tamanho, busca) => this.api.listarCompositores(pagina, tamanho, busca),
   );
 }
