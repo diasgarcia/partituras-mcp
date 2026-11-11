@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { catchError, of } from 'rxjs';
 import { PartiturasApiService } from '../api/partituras-api.service';
+import { criarListaPaginada } from '../lista-paginada';
 import type { SessaoEstudo } from '../modelos/sessao-estudo';
 
 @Component({
@@ -15,7 +14,8 @@ export class ListaSessoesEstudoComponent {
     'data', 'partitura', 'minutos', 'observacoes',
   ];
 
-  protected readonly sessoes = toSignal(
-    inject(PartiturasApiService).listarSessoesEstudo().pipe(catchError(() => of(null))),
+  private readonly api = inject(PartiturasApiService);
+  protected readonly listagem = criarListaPaginada(
+    (pagina, tamanho, busca) => this.api.listarSessoesEstudo(pagina, tamanho, busca),
   );
 }

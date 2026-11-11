@@ -1,15 +1,27 @@
 <h1 id="titulo-compositores">Compositores</h1>
 
-@let registros = compositores();
-@if (registros === undefined) {
+<mat-form-field class="campo-busca">
+  <mat-label>Buscar por nome</mat-label>
+  <input matInput type="search" #filtro (input)="listagem.filtrar(filtro.value)" />
+</mat-form-field>
+
+@let resultado = listagem.resultado();
+@let pagina = resultado ? resultado.pagina : undefined;
+@let numeroPagina = resultado ? resultado.consulta.pagina : 0;
+@let carregando = listagem.carregando();
+
+@if (carregando) {
   <mat-progress-bar mode="indeterminate" aria-label="Carregando compositores" />
-} @else if (registros === null) {
+}
+@if (!carregando && pagina === null) {
   <p role="alert">Não foi possível carregar os compositores.</p>
-} @else if (!registros.length) {
-  <p>Nenhum compositor cadastrado.</p>
-} @else {
+} @else if (!carregando && pagina && !pagina.total) {
+  <p>{{ listagem.busca() ? 'Nenhum compositor encontrado.' : 'Nenhum compositor cadastrado.' }}</p>
+} @else if (!carregando && pagina && !pagina.conteudo.length) {
+  <p>Esta página está vazia.</p>
+} @else if (pagina && pagina.conteudo.length) {
   <div class="tabela-rolavel" role="region" aria-labelledby="titulo-compositores" tabindex="0">
-    <table mat-table [dataSource]="registros" aria-labelledby="titulo-compositores">
+    <table mat-table [dataSource]="pagina.conteudo" aria-labelledby="titulo-compositores">
       <ng-container matColumnDef="id">
         <th mat-header-cell *matHeaderCellDef scope="col">ID</th>
         <td mat-cell *matCellDef="let compositor">{{ compositor.id }}</td>
@@ -34,4 +46,17 @@
       <tr mat-row *matRowDef="let registro; columns: colunas"></tr>
     </table>
   </div>
+}
+
+@if (pagina && (pagina.total > listagem.tamanho || numeroPagina > 0)) {
+  <mat-paginator
+    aria-label="Paginação dos compositores"
+    [length]="pagina.total"
+    [pageSize]="listagem.tamanho"
+    [pageIndex]="numeroPagina"
+    [hidePageSize]="true"
+    [showFirstLastButtons]="true"
+    [disabled]="carregando"
+    (page)="listagem.mudarPagina($event.pageIndex)"
+  />
 }
